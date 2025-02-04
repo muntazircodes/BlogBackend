@@ -14,13 +14,13 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST route to create a user
+// POST route to create a new user
 router.post(
   "/create",
   [
-    body("name").not().isEmpty().withMessage("Name is required"),
+    body("name").notEmpty().withMessage("Name is required"),
     body("email").isEmail().withMessage("Please enter a valid email"),
-    body("password").not().isEmpty().withMessage("Password is required"),
+    body("password").notEmpty().withMessage("Password is required"),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -39,14 +39,14 @@ router.post(
   }
 );
 
-// Update user route
-router.updateUser = async (req, res) => {
+// PUT route to update user by ID
+router.put("/updateUser/:id", async (req, res) => {
   try {
     const user = await userService.updateUser(req.params.id, req.body);
     return res.status(200).json({ user });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
-};
+});
 
 module.exports = router;
