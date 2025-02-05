@@ -1,20 +1,24 @@
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 const userService = require("../services/userServices");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// GET route to fetch all users
-router.get("/", async (req, res) => {
+// Protected route - Get user profile (requires authentication)
+router.get("/profile", authMiddleware, async (req, res) => {
   try {
-    const users = await userService.getAllUsers();
-    return res.status(200).json({ users });
+    const user = await userService.getUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
   } catch (error) {
-    return res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// POST route to create a new user
+// Create a new user
 router.post(
   "/create",
   [
@@ -39,8 +43,8 @@ router.post(
   }
 );
 
-// PUT route to update user by ID
-router.put("/updateUser/:id", async (req, res) => {
+// Update user by ID (requires authentication)
+router.put("/updateUser/:id", authMiddleware, async (req, res) => {
   try {
     const user = await userService.updateUser(req.params.id, req.body);
     return res.status(200).json({ user });
