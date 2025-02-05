@@ -9,8 +9,11 @@ const registerUser = async (userData) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) throw new Error("User already exists");
 
-  // Create new user
-  const newUser = new User({ name, email, password });
+  // Hash password before saving
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create new user with hashed password
+  const newUser = new User({ name, email, password: hashedPassword });
   await newUser.save();
 
   return newUser;
@@ -20,7 +23,7 @@ const loginUser = async (email, password) => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("Invalid email or password");
 
-  // Compare passwords
+  // Compare hashed passwords
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Invalid email or password");
 
