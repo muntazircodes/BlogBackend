@@ -9,7 +9,8 @@ const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => 
   const token = req.header("Authorization");
 
   if (!token) {
-    return res.status(401).json({ error: "Access denied" });
+     res.status(401).json({ error: "Access denied" });
+     return
   }
 
   try {
@@ -17,7 +18,7 @@ const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => 
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(401).json({ error: "Invalid or expired token." });
+    res.status(401).json({ error: "Invalid or expired token." });
   }
 };
 
