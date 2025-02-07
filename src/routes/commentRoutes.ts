@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { body, validationResult } from "express-validator";
 import authMiddleware from "../middleware/authMiddleware";
 import {
@@ -18,9 +18,7 @@ router.get(
       const comments = await getComments();
       res.status(200).json({ comments });
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: error instanceof Error ? error.message : "Unknown error" });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
     }
   }
 );
@@ -37,6 +35,7 @@ router.post(
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() });
+      return; // ✅ Ensure function exits after sending response
     }
 
     const { content, postId } = req.body;
@@ -44,14 +43,12 @@ router.post(
     try {
       const newComment = await createComment({
         content,
-        author: (req as any).user.id, // Assigning authenticated user's ID as the author
+        author: (req as any).user.id, // Assign authenticated user's ID as author
         postId,
       });
       res.status(201).json({ comment: newComment });
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: error instanceof Error ? error.message : "Unknown error" });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
     }
   }
 );
@@ -60,7 +57,7 @@ router.post(
 router.put(
   "/updateComment/:id",
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const updatedComment = await updateComment(req.params.id, req.body);
       if (!updatedComment) {
@@ -69,9 +66,7 @@ router.put(
       }
       res.status(200).json({ comment: updatedComment });
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: error instanceof Error ? error.message : "Unknown error" });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
     }
   }
 );
@@ -80,23 +75,16 @@ router.put(
 router.delete(
   "/deleteComment/:id",
   authMiddleware,
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const deletedComment = await deleteComment(req.params.id);
       if (!deletedComment) {
         res.status(404).json({ error: "Comment not found" });
         return;
       }
-      res
-        .status(200)
-        .json({ message: "Comment deleted successfully", deletedComment });
+      res.status(200).json({ message: "Comment deleted successfully", deletedComment });
     } catch (error) {
-      res
-        .status(500)
-        .json({ error: error instanceof Error ? error.message : "Unknown error" });
-      return res
-        .status(500)
-        .json({ error: error instanceof Error ? error.message : "Unknown error" });
+      res.status(500).json({ error: error instanceof Error ? error.message : "Unknown error" });
     }
   }
 );
