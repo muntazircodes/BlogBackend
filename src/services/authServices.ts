@@ -34,9 +34,8 @@ const registerUser = async (userData: UserData): Promise<IUser> => {
 
   return newUser;
 };
-
 // Login User function
-const loginUser = async (email: string, password: string): Promise<AuthResponse> => {
+const loginUser = async (email: string, password: string): Promise<string> => {
   const user = await User.findOne({ email });
   if (!user) throw new Error("Invalid email or password");
 
@@ -47,11 +46,11 @@ const loginUser = async (email: string, password: string): Promise<AuthResponse>
   // Generate JWT token
   const token = jwt.sign(
     { id: user._id, email: user.email },
-    process.env.JWT_SECRET as string, // Ensuring string type
+    process.env.JWT_SECRET as string,
     { expiresIn: "1h" }
   );
 
-  return { token, user };
+  return token;
 };
 
 export { registerUser, loginUser };
