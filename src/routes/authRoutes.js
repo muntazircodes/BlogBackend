@@ -23,7 +23,7 @@ router.post("/register", [
     (0, express_validator_1.body)("password")
         .isLength({ min: 6 })
         .withMessage("Password must be at least 6 characters"),
-], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+], (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
@@ -33,29 +33,28 @@ router.post("/register", [
         res.status(201).json({ message: "User registered successfully", user });
     }
     catch (error) {
-        res
-            .status(400)
-            .json({ error: error instanceof Error ? error.message : "Unknown error" });
+        next(error); // ✅ Pass error to global handler
     }
 }));
 // 🔵 Login User
 router.post("/login", [
     (0, express_validator_1.body)("email").isEmail().withMessage("Valid email is required"),
     (0, express_validator_1.body)("password").notEmpty().withMessage("Password is required"),
-], (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+], (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const errors = (0, express_validator_1.validationResult)(req);
     if (!errors.isEmpty()) {
         res.status(400).json({ errors: errors.array() });
     }
     try {
         const { email, password } = req.body;
-        const { token, user } = yield (0, authServices_1.loginUser)(email, password);
-        res.status(200).json({ token, user });
+        const token = yield (0, authServices_1.loginUser)(email, password);
+        if (!token) {
+            res.status(401).json({ error: "Invalid credentials" });
+        }
+        res.status(200).json(token);
     }
     catch (error) {
-        res
-            .status(400)
-            .json({ error: error instanceof Error ? error.message : "Unknown error" });
+        next(error);
     }
 }));
 exports.default = router;
