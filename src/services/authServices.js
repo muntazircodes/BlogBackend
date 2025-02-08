@@ -42,8 +42,7 @@ const loginUser = (email, password) => __awaiter(void 0, void 0, void 0, functio
     if (!isMatch)
         throw new Error("Invalid email or password");
     // Generate JWT token
-    const token = jsonwebtoken_1.default.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, // Ensuring string type
-    { expiresIn: "1h" });
-    return { token, user };
+    const token = jsonwebtoken_1.default.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    return token;
 });
 exports.loginUser = loginUser;
