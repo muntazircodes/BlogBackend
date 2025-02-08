@@ -49,9 +49,9 @@ router.post(
       }
 
       const { token, user } = loginResponse;
-      res.status(200).json({ token, user });
+      res.status(200).json({ token});
     } catch (error) {
-      next(error); // ✅ Proper error handling
+      next(error);
     }
   }
 );
